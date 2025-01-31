@@ -143,7 +143,7 @@ val quotesList = listOf(
 
 
 @Composable
-fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit) {
+fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit,copyQuoteToClipBoard:()->Unit) {
     var showBottomSheet by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -275,7 +275,7 @@ fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit) {
                 )
                 bottomsheet( showBottomSheet, onDismiss = {
                     showBottomSheet = !showBottomSheet
-                },changeQuoteColor = changeQuoteColor)
+                },changeQuoteColor = changeQuoteColor,copyQuoteToClipBoard=copyQuoteToClipBoard)
             }
         }
     }

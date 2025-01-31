@@ -1,5 +1,8 @@
 package com.example.myapplication.presentation
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
@@ -33,12 +36,20 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
      fun processIntent(intent: QuoteIntent){
         when(intent){
             is QuoteIntent.FetchQuote -> getQuote()
+            is QuoteIntent.CopyQuoteToClipBoard -> copyQuoteToClipBoard(intent.context,intent.quote)
             is QuoteIntent.ChangeQuoteColor -> updateQuoteColor(intent.color)
         }
     }
 
     private fun updateQuoteColor(color: androidx.compose.ui.graphics.Color){
         _state.value = _state.value.copy(quoteColor = color)
+    }
+
+    private fun copyQuoteToClipBoard(context: Context,quote:String){
+        val service = context.getSystemService(Context.CLIPBOARD_SERVICE)
+        val clipboardManager = service as ClipboardManager
+        val clipData = ClipData.newPlainText("quote", quote)
+        clipboardManager.setPrimaryClip(clipData)
     }
 
     private fun fetchQuote(){

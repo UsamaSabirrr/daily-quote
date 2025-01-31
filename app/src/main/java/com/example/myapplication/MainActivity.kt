@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.room.Room
 import androidx.work.WorkManager
 import com.example.myapplication.network.AppDatabase
@@ -37,11 +39,16 @@ class MainActivity : ComponentActivity() {
             val state by viewModel.state.collectAsState()
             val scope = CoroutineScope(Dispatchers.Main)
 
+            val context = LocalContext.current
+
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     QuoteScreen(quoteColor = state.quoteColor, changeQuoteColor ={color ->
                         viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
-                    })
+                    }, copyQuoteToClipBoard = {
+                        viewModel.processIntent(QuoteIntent.CopyQuoteToClipBoard(context = context,"This is new quote"))
+                    }
+                    )
                 }
             }
         }
