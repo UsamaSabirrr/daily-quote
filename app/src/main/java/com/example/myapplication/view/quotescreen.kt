@@ -1,5 +1,6 @@
 package com.example.myapplication.view
 
+import android.app.WallpaperManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,12 +30,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.domain.Quote
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 val quotesList = listOf(
     Quote(
@@ -143,8 +150,17 @@ val quotesList = listOf(
 
 
 @Composable
-fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit,copyQuoteToClipBoard:()->Unit) {
+fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit,copyQuoteToClipBoard: ()->Unit) {
     var showBottomSheet by remember { mutableStateOf(false) }
+    var scope = CoroutineScope(Dispatchers.Main)
+
+    var showContentForWallpapaer by remember {
+        mutableStateOf(false)
+    }
+    var graphicsLayer = rememberGraphicsLayer()
+    val context = LocalContext.current
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -171,7 +187,11 @@ fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit,copyQuote
                             color = Color.White.copy(alpha = 0.5f),
                             shape = RoundedCornerShape(20.dp)
                         )
-                        .padding(8.dp)
+                        .padding(8.dp).clickable {
+                            scope.launch(Dispatchers.IO) {
+
+                            }
+                        }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
@@ -205,18 +225,22 @@ fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit,copyQuote
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally){
-                    Text(
-                        text = buildAnnotatedString {
-                            append("${quotesList[0].title}")
-                        },
-                        textAlign = TextAlign.Center,
-                        color = quoteColor,
 
-                        fontSize = 34.sp,
-                        lineHeight = 32.sp,
-                        fontFamily = FontFamily.Default  // You can replace with custom font
+                        Text(
+                            text = buildAnnotatedString {
+                                append(quotesList[0].title)
+                            },
+                            textAlign = TextAlign.Center,
+                            color = quoteColor,
+                            fontSize = 28.sp,
+                            lineHeight = 40.sp,
+                            letterSpacing = 0.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .fillMaxWidth(),
 
-                    )
+                        )
                     Text(
                         text = buildAnnotatedString {
                             append("- ${quotesList[0].author}")
@@ -224,7 +248,8 @@ fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit,copyQuote
                         textAlign = TextAlign.Center,
                         fontSize = 20.sp,
                         lineHeight = 32.sp,
-                        fontFamily = FontFamily.Default  // You can replace with custom font
+                        fontFamily = FontFamily.Default,  // You can replace with custom font
+                        color = quoteColor
                     )
                 }
 
@@ -275,9 +300,26 @@ fun QuoteScreen(quoteColor:Color, changeQuoteColor:(color:Color)->Unit,copyQuote
                 )
                 bottomsheet( showBottomSheet, onDismiss = {
                     showBottomSheet = !showBottomSheet
-                },changeQuoteColor = changeQuoteColor,copyQuoteToClipBoard=copyQuoteToClipBoard)
+                },changeQuoteColor = changeQuoteColor,copyQuoteToClipBoard=copyQuoteToClipBoard, setWallpaper = {
+                    scope.launch(Dispatchers.IO) {
+                        showContentForWallpapaer = true
+//                        val bitmap = WallpaperRenderer(context).renderToBitmap(700,700,
+//                            {
+//                                ContentForWallpaper()
+//                            }
+//                        )
+                        //Log.d("Tag","hello how are you $bitmap")
+                        val wallpaperManager = WallpaperManager.getInstance(context)
+                       // wallpaperManager.setBitmap(bitmap)
+                        showContentForWallpapaer = false
+                    }
+                })
+
+
             }
         }
     }
+
 }
+
 

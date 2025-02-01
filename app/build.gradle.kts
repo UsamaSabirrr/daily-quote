@@ -68,6 +68,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     runtimeOnly("androidx.compose.material:material-icons-extended:1.7.6")
+    runtimeOnly("androidx.compose.ui:ui:1.7.7")
+
 
 
 

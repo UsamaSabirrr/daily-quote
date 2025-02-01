@@ -52,6 +52,18 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
         clipboardManager.setPrimaryClip(clipData)
     }
 
+//    fun setQuoteAsWallpaper(context: Context,bimap:Bitmap){
+//        viewModelScope.launch(Dispatchers.IO) {
+//            try {
+//                val bitmap = createQuoteBitmap(context, "Hy man how are you",)
+//                val wallpaperManager = WallpaperManager.getInstance(context)
+//                wallpaperManager.setBitmap(bitmap)
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
+
     private fun fetchQuote(){
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
