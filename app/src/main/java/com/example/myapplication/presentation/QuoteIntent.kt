@@ -4,6 +4,6 @@ import android.content.Context
 
 sealed class QuoteIntent {
     object FetchQuote : QuoteIntent()
-    data class CopyQuoteToClipBoard(val context: Context, val quote:String) : QuoteIntent()
+    data class CopyQuoteToClipBoard(val context: Context) : QuoteIntent()
     data class ChangeQuoteColor(val color: androidx.compose.ui.graphics.Color) : QuoteIntent()
 }

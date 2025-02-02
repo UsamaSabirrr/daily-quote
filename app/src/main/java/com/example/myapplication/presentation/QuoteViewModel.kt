@@ -23,10 +23,12 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
     val state: StateFlow<QuoteState> = _state.asStateFlow()
     val quoteDao = db.quoteDao()
 
+
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
-          val result = quoteDao.getAll()
-            _state.value = _state.value.copy(quoteList = result)
+//          val result = quoteDao.getAll()
+//            _state.value = _state.value.copy(quoteList = result)
         }
     }
 
@@ -36,7 +38,7 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
      fun processIntent(intent: QuoteIntent){
         when(intent){
             is QuoteIntent.FetchQuote -> getQuote()
-            is QuoteIntent.CopyQuoteToClipBoard -> copyQuoteToClipBoard(intent.context,intent.quote)
+            is QuoteIntent.CopyQuoteToClipBoard -> copyQuoteToClipBoard(intent.context)
             is QuoteIntent.ChangeQuoteColor -> updateQuoteColor(intent.color)
         }
     }
@@ -45,10 +47,10 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
         _state.value = _state.value.copy(quoteColor = color)
     }
 
-    private fun copyQuoteToClipBoard(context: Context,quote:String){
+    private fun copyQuoteToClipBoard(context: Context){
         val service = context.getSystemService(Context.CLIPBOARD_SERVICE)
         val clipboardManager = service as ClipboardManager
-        val clipData = ClipData.newPlainText("quote", quote)
+        val clipData = ClipData.newPlainText("quote", "${_state.value.quote?.title}\n\n${_state.value.quote?.author}")
         clipboardManager.setPrimaryClip(clipData)
     }
 

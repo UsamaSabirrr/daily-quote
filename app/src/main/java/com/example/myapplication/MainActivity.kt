@@ -60,34 +60,18 @@ class MainActivity : ComponentActivity() {
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
                         Column {
-                            QuoteScreen(quoteColor = state.quoteColor, changeQuoteColor = { color ->
+                            QuoteScreen(
+                                viewModel = viewModel,
+                                quoteColor = state.quoteColor, changeQuoteColor = { color ->
                                 viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
                             }, copyQuoteToClipBoard = {
 
-                                // val bitmap = composableToBitmap(700.dp,700.dp, content = {QuoteWallpaperContent(Color(0xFF93000A))},  )
-
-//                            val bitmap = createBitmapFromComposable(context) {
-//                                QuoteWallpaperContent(Color(0xFF93000A))
-//                            }
-                                //  Log.d("Tag","bit map is $bitmap")
-//                            scope.launch(Dispatchers.IO) {
-//                                try {
-//                                    val wallpaperManager = WallpaperManager.getInstance(context)
-//                                    wallpaperManager.setBitmap(bitmap)
-//                                } catch (e: Exception) {
-//                                    e.printStackTrace()
-//                                }
-//                            }
-
-                                //TODO uncomment
-//                            viewModel.processIntent(
-//                                QuoteIntent.CopyQuoteToClipBoard(
-//                                    context = context,
-//                                    "This is new quote"
-//                                )
-//                            )
+                            viewModel.processIntent(
+                                QuoteIntent.CopyQuoteToClipBoard(
+                                    context = context,
+                                )
+                            )
                             },
-
 
                             )
                             dummyData()

@@ -1,5 +1,6 @@
 package com.example.myapplication.view
 
+import android.app.WallpaperManager
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
@@ -31,6 +32,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +55,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
+import com.example.myapplication.presentation.QuoteIntent
+import com.example.myapplication.presentation.QuoteViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -61,12 +66,17 @@ import java.io.OutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun bottomsheet(showBottomSheet:Boolean,onDismiss:()->Unit,changeQuoteColor:(color:Color)->Unit,copyQuoteToClipBoard:()->Unit,setWallpaper:()->Unit){
+fun bottomsheet(
+    viewModel: QuoteViewModel,
+
+    showBottomSheet:Boolean,onDismiss:()->Unit,changeQuoteColor:(color:Color)->Unit,copyQuoteToClipBoard:()->Unit,setWallpaper:()->Unit){
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     val colors = listOf(Color(0xffe8daef),Color(0xffd2b4de),Color(0xffabebc6),Color(0xfff1c40f),Color(0xff8e44ad))
     var mygraphicsdLayer = rememberGraphicsLayer()
     val context = LocalContext.current
+
+    val state by viewModel.state.collectAsState()
 
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -79,30 +89,35 @@ fun bottomsheet(showBottomSheet:Boolean,onDismiss:()->Unit,changeQuoteColor:(col
             Column(modifier = Modifier
                 .height(200.dp)
                 .padding(horizontal = 10.dp)) {
-                Row {
-                   BottomSheetActions(drawable = R.drawable.baseline_content_copy_24,"Copy Quote", onClick = copyQuoteToClipBoard)
+                Row(horizontalArrangement = Arrangement.Absolute.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                   BottomSheetActions(drawable = R.drawable.baseline_content_copy_24,"Copy Quote", onClick = {
+                       viewModel.processIntent(
+                           QuoteIntent.CopyQuoteToClipBoard(
+                               context = context,
+                           )
+                       )
+                   })
                     BottomSheetActions(drawable = R.drawable.baseline_wallpaper_24,"Set Wallpaper", onClick = {
                         scope.launch(Dispatchers.IO) {
                             if(mygraphicsdLayer.size.width>0 && mygraphicsdLayer.size.height>0){
                                 val bitmap = mygraphicsdLayer.toImageBitmap().asAndroidBitmap()
+                                val wallpaperManager = WallpaperManager.getInstance(context)
+                                wallpaperManager.setBitmap(bitmap)
+                            }
+                        }
+                    })
+                    BottomSheetActions(drawable = R.drawable.outline_download_for_offline_24,"Save to Gallery", onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            if(mygraphicsdLayer.size.width>0 && mygraphicsdLayer.size.height>0){
+                                val bitmap = mygraphicsdLayer.toImageBitmap().asAndroidBitmap()
                                 checkPermissionAndSave(context,bitmap)
-//                                // create file
-//                                val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-//                                    "my-app-post-${System.currentTimeMillis()}.png")
-//
-//                                // write bitmap to file as PNG
-//                                file.outputStream().use { out ->
-//                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-//                                    out.flush()
-//                                }
-//                                Log.d("Tag","saved successfully")
                             }
                         }
                     })
 
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 //Color Selection
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
@@ -126,7 +141,9 @@ fun bottomsheet(showBottomSheet:Boolean,onDismiss:()->Unit,changeQuoteColor:(col
 
 
                 }
-                ContentForWallpaper(onValueChange = {graphicsdLayer ->
+                ContentForWallpaper(
+                    viewModel=viewModel,
+                    onValueChange = {graphicsdLayer ->
                     mygraphicsdLayer = graphicsdLayer
                 })
             }
@@ -187,13 +204,13 @@ fun BottomSheetActions(drawable: Int, actionName:String, onClick:()->Unit){
         }, horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(imageVector = ImageVector.vectorResource(drawable),contentDescription = actionName, tint = MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.height(10.dp))
-        Text("Copy Quote", color = MaterialTheme.colorScheme.onSurface)
+        Text(actionName, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
 
 @Composable
-fun ContentForWallpaper(onValueChange:(graphicsLayer:GraphicsLayer)->Unit){
+fun ContentForWallpaper(viewModel: QuoteViewModel, onValueChange:(graphicsLayer:GraphicsLayer)->Unit){
     var graphicsLayer = rememberGraphicsLayer()
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
@@ -227,10 +244,10 @@ fun ContentForWallpaper(onValueChange:(graphicsLayer:GraphicsLayer)->Unit){
                 .requiredSize(width = screenWidthDp, height = screenHeightDp)
         ) {
 
-                        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.width(screenWidthDp).height(screenHeightDp).background(color = Color.Cyan)) {
+                        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.width(screenWidthDp).height(screenHeightDp).background(color = Color.Cyan).padding(20.dp)) {
                             Text(
                                 text = buildAnnotatedString {
-                                   append("Heelo bro how are you? Where have you been")
+                                   append(viewModel.state.value.quote?.title)
                                 },
                                 textAlign = TextAlign.Center,
                                 color = Color(0xFFFFB4AB),
@@ -241,7 +258,7 @@ fun ContentForWallpaper(onValueChange:(graphicsLayer:GraphicsLayer)->Unit){
                                 )
                             Text(
                                 text = buildAnnotatedString {
-                                    append("- ${quotesList[0].author}")
+                                    append("- ${viewModel.state.value.quote?.author}")
                                 },
                                 textAlign = TextAlign.Center,
                                 fontSize = 20.sp,
