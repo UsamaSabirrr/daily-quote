@@ -100,14 +100,10 @@ fun QuoteScreen(
             state = scrollState,
             flingBehavior = flingBehavior
 
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(16.dp),
-//            horizontalAlignment = Alignment.CenterHorizontally.verticalScroll
         ) {
 
             viewModel.state.value.quoteList?.size?.let {
-                items(it) {
+                items(it) {index->
                     // Quote Text
                     Column(modifier = Modifier.height(screenHeight)){
                         Box(
@@ -119,7 +115,7 @@ fun QuoteScreen(
 
                                 Text(
                                     text = buildAnnotatedString {
-                                        append(state.quote?.title)
+                                        append(viewModel.state.value.quoteList!![index].quote)
                                     },
                                     textAlign = TextAlign.Center,
                                     color = quoteColor,
@@ -135,7 +131,7 @@ fun QuoteScreen(
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
                                     text = buildAnnotatedString {
-                                        append("- ${state.quote?.author}")
+                                        append(viewModel.state.value.quoteList!![index].author)
                                     },
                                     textAlign = TextAlign.Center,
                                     fontSize = 20.sp,
@@ -167,6 +163,20 @@ fun QuoteScreen(
                                     )
                                     .padding(8.dp).clickable {
                                         showBottomSheet = !showBottomSheet
+                                    }
+                            )
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
+                                contentDescription = "Fetch Images",
+                                modifier = Modifier
+                                    .background(
+                                        color = Color.White,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .padding(8.dp).clickable {
+                                        scope.launch {
+                                            viewModel.getQuote()
+                                        }
                                     }
                             )
                             bottomsheet(

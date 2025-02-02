@@ -247,7 +247,7 @@ fun ContentForWallpaper(viewModel: QuoteViewModel, onValueChange:(graphicsLayer:
                         Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.width(screenWidthDp).height(screenHeightDp).background(color = Color.Cyan).padding(20.dp)) {
                             Text(
                                 text = buildAnnotatedString {
-                                   append(viewModel.state.value.quote?.title)
+                                   append(viewModel.state.value.quote?.quote)
                                 },
                                 textAlign = TextAlign.Center,
                                 color = Color(0xFFFFB4AB),

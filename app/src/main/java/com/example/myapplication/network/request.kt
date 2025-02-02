@@ -2,21 +2,23 @@ package com.example.myapplication.network
 
 import android.util.Log
 import com.example.myapplication.domain.Quote
+import com.example.myapplication.domain.QuoteOnline
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import java.util.UUID
 
 interface ApiService {
-    @GET("todos/3")
-    suspend fun getQuote():Quote
+    @GET("quotes")
+    suspend fun getQuote(): List<QuoteOnline>
 
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "https://jsonplaceholder.typicode.com/"
+    private const val BASE_URL = "https://zenquotes.io/api/"
 
     var loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -50,15 +52,21 @@ object RetrofitClient {
 
 }
 
-class QuoteRepository{
+class QuoteRepository(val database: AppDatabase){
     private val apiService = RetrofitClient.apiService
 
-    suspend fun getUser():Result<Quote>{
+
+    suspend fun getUser():Result<List<Quote>>{
         try {
+
           val result =  apiService.getQuote()
+           val final = result.map { it->
+               val uuid:String = UUID.randomUUID().toString()
+                Quote(id=uuid, quote = it.q, author = it.a)
+            }
             print("result is $result")
             Log.d("User","data is $result")
-            return Result.success(result)
+            return Result.success(final)
         }catch (e:Exception){
             print(e)
             return Result.failure(e)

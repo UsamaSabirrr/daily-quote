@@ -37,7 +37,7 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
 
      fun processIntent(intent: QuoteIntent){
         when(intent){
-            is QuoteIntent.FetchQuote -> getQuote()
+           // is QuoteIntent.FetchQuote -> getQuote()
             is QuoteIntent.CopyQuoteToClipBoard -> copyQuoteToClipBoard(intent.context)
             is QuoteIntent.ChangeQuoteColor -> updateQuoteColor(intent.color)
         }
@@ -50,7 +50,7 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
     private fun copyQuoteToClipBoard(context: Context){
         val service = context.getSystemService(Context.CLIPBOARD_SERVICE)
         val clipboardManager = service as ClipboardManager
-        val clipData = ClipData.newPlainText("quote", "${_state.value.quote?.title}\n\n${_state.value.quote?.author}")
+        val clipData = ClipData.newPlainText("quote", "${_state.value.quote?.quote}\n\n${_state.value.quote?.author}")
         clipboardManager.setPrimaryClip(clipData)
     }
 
@@ -80,15 +80,12 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
            val result = quoteRepository.getUser()
             val users = result.getOrNull()
 
-            _state.value = _state.value.copy(users?.title?.let {
-                Quote(
-                    title = it,
-                    id ="2"
-                )
-            }, isLoading = false)
-            if (users != null) {
-                quoteDao.insertQuote(com.example.myapplication.network.QuoteLocal(uid = users.id, quote = users.title))
-            }
+            _state.value = _state.value.copy(quoteList = users, isLoading = false)
+
+
+//            if (users != null) {
+//                quoteDao.insertQuote(com.example.myapplication.network.QuoteLocal(uid = users.id, quote = users.title))
+//            }
         }
     }
 

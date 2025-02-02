@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     val workManager = WorkManager.getInstance()
-    val quoteRepository = QuoteRepository()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
                 applicationContext,
                 AppDatabase::class.java, "quote-database"
             ).build()
+            val quoteRepository = QuoteRepository(db)
             val viewModel = QuoteViewModel(workManager,quoteRepository,db)
 
             val state by viewModel.state.collectAsState()

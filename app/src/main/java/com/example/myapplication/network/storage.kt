@@ -11,8 +11,9 @@ import androidx.room.RoomDatabase
 
 @Entity
 data class QuoteLocal(
-    @PrimaryKey val uid: String,
-    @ColumnInfo(name = "title") val quote: String?,
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "quote") val quote: String?,
+    @ColumnInfo(name= "author") val author:String
 )
 
 @Dao
