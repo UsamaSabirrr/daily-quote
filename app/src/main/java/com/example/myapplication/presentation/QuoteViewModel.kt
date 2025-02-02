@@ -27,8 +27,10 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-//          val result = quoteDao.getAll()
-//            _state.value = _state.value.copy(quoteList = result)
+          val result = quoteRepository.getAllQuotes()
+            if(result.isNotEmpty()){
+                _state.value = _state.value.copy(quoteList = result)
+            }
         }
     }
 
@@ -81,11 +83,18 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
             val users = result.getOrNull()
 
             _state.value = _state.value.copy(quoteList = users, isLoading = false)
+            saveQuoteLocally()
 
 
 //            if (users != null) {
 //                quoteDao.insertQuote(com.example.myapplication.network.QuoteLocal(uid = users.id, quote = users.title))
 //            }
+        }
+    }
+
+    private fun saveQuoteLocally(){
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.value.quoteList?.let { quoteRepository.saveQuotesLocally(quoteList = it) }
         }
     }
 

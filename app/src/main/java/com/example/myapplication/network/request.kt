@@ -73,4 +73,16 @@ class QuoteRepository(val database: AppDatabase){
         }
     }
 
+    suspend fun saveQuotesLocally(quoteList:List<Quote>){
+        val quoteLocalList = quoteList.map { it->QuoteLocal(id = it.id, quote = it.quote, author = it.author?:"") }
+        database.quoteDao().insertQuote(quoteLocalList)
+    }
+
+    suspend fun getAllQuotes():List<Quote>{
+        val quotes = database.quoteDao().getAll()
+       val quotesList = quotes.map { it->Quote(id = it.id, quote = it.quote?:"", author = it.author) }
+        return quotesList
+
+    }
+
 }

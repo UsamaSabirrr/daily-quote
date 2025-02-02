@@ -22,7 +22,7 @@ interface QuoteDao {
     fun getAll(): List<QuoteLocal>
 
     @Insert
-    fun insertQuote(vararg users: QuoteLocal)
+    fun insertQuote( users: List<QuoteLocal>)
 
 }
 
