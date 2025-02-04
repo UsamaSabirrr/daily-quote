@@ -42,6 +42,7 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
            // is QuoteIntent.FetchQuote -> getQuote()
             is QuoteIntent.CopyQuoteToClipBoard -> copyQuoteToClipBoard(intent.context)
             is QuoteIntent.ChangeQuoteColor -> updateQuoteColor(intent.color)
+            is QuoteIntent.SetCurrentQuoteIndex -> setCurrentQuoteIndex(intent.index)
         }
     }
 
@@ -54,6 +55,10 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
         val clipboardManager = service as ClipboardManager
         val clipData = ClipData.newPlainText("quote", "${_state.value.quote?.quote}\n\n${_state.value.quote?.author}")
         clipboardManager.setPrimaryClip(clipData)
+    }
+
+    private fun setCurrentQuoteIndex(index:Int){
+        _state.value = _state.value.copy(quoteIndex = index)
     }
 
 //    fun setQuoteAsWallpaper(context: Context,bimap:Bitmap){

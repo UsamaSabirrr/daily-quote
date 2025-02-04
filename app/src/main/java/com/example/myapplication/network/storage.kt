@@ -18,7 +18,7 @@ data class QuoteLocal(
 
 @Dao
 interface QuoteDao {
-    @Query("SELECT * FROM quotelocal")
+    @Query("SELECT * FROM quotelocal limit 20")
     fun getAll(): List<QuoteLocal>
 
     @Insert

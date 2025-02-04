@@ -119,5 +119,6 @@ data class QuoteState(
     val error: String? = null,
     val isDailyQuoteScheduled: Boolean = false,
     val quoteColor:Color = Color.Black,
-    val quoteBackground:Color = Color.Black
+    val quoteBackground:Color = Color.Black,
+    val quoteIndex:Int = -1
 )

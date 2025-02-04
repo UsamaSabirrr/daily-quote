@@ -11,12 +11,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
@@ -25,16 +27,25 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.room.Room
+import androidx.work.Configuration
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.impl.utils.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.example.myapplication.network.AppDatabase
 import com.example.myapplication.network.QuoteRepository
 import com.example.myapplication.presentation.QuoteIntent
 import com.example.myapplication.presentation.QuoteViewModel
+import com.example.myapplication.presentation.QuoteWorker
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.view.QuoteScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 
 class MainActivity : ComponentActivity() {
     val workManager = WorkManager.getInstance()
@@ -61,21 +72,35 @@ class MainActivity : ComponentActivity() {
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
                         Column {
-                            QuoteScreen(
-                                viewModel = viewModel,
-                                quoteColor = state.quoteColor, changeQuoteColor = { color ->
-                                viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
-                            }, copyQuoteToClipBoard = {
+//                            QuoteScreen(
+//                                viewModel = viewModel,
+//                                quoteColor = state.quoteColor, changeQuoteColor = { color ->
+//                                viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
+//                            }, copyQuoteToClipBoard = {
+//
+//                            viewModel.processIntent(
+//                                QuoteIntent.CopyQuoteToClipBoard(
+//                                    context = context,
+//                                )
+//                            )
+//                            },
+//
+//                            )
+                            Button(onClick = {
+                                val config = Configuration.Builder()
+                                    .setMinimumLoggingLevel(Log.DEBUG)
+                                    .setExecutor(SynchronousExecutor())
+                                    .build()
 
-                            viewModel.processIntent(
-                                QuoteIntent.CopyQuoteToClipBoard(
-                                    context = context,
-                                )
-                            )
-                            },
+                                WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
 
-                            )
-                            dummyData()
+                                val testWorker = PeriodicWorkRequestBuilder<QuoteWorker>(
+                                    1, TimeUnit.MINUTES  // Much shorter interval for testing
+                                ).build()
+                                workManager.enqueue(testWorker)
+                            }) {
+                                Text("Click me")
+                            }
                         }
                     }
                 }
@@ -84,37 +109,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun dummyData(){
-    val coroutineScope = rememberCoroutineScope()
-    val graphicsLayer = rememberGraphicsLayer()
-    val context = LocalContext.current
-    Box(
-        modifier = Modifier
-            .drawWithContent {
-                // call record to capture the content in the graphics layer
-                graphicsLayer.record {
-                    // draw the contents of the composable into the graphics layer
-                    this@drawWithContent.drawContent()
-                }
-
-            }
-            .clickable {
-                coroutineScope.launch {
-                    val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                    Log.d("Tag","hello how are you $bitmap")
-                    val wallpaperManager = WallpaperManager.getInstance(context)
-                    wallpaperManager.setBitmap(bitmap)
 
 
-                    // do something with the newly acquired bitmap
-                }
-            }
-            .background(Color.White)
-    ) {
-        Text("Hello Android", fontSize = 26.sp)
-    }
-}
 
 
 

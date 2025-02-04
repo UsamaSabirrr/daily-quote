@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
@@ -54,9 +55,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.R
 import com.example.myapplication.domain.Quote
+import com.example.myapplication.presentation.QuoteIntent
 import com.example.myapplication.presentation.QuoteViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.Stack
 
@@ -89,6 +92,15 @@ fun QuoteScreen(
     }
     var graphicsLayer = rememberGraphicsLayer()
     val context = LocalContext.current
+
+
+    LaunchedEffect(scrollState) {
+        snapshotFlow { scrollState.firstVisibleItemIndex }
+            .distinctUntilChanged()  // Only emit when value actually changes
+            .collect { index ->
+                viewModel.processIntent(QuoteIntent.SetCurrentQuoteIndex(index+1))
+            }
+    }
 
 
     Box(
@@ -144,70 +156,71 @@ fun QuoteScreen(
 
                         }
 
-                        // Bottom Buttons
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
-                                contentDescription = "Settings",
-                                modifier = Modifier
-                                    .background(
-                                        color = Color.White,
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .padding(8.dp).clickable {
-                                        showBottomSheet = !showBottomSheet
-                                    }
-                            )
-                            Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
-                                contentDescription = "Fetch Images",
-                                modifier = Modifier
-                                    .background(
-                                        color = Color.White,
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .padding(8.dp).clickable {
-                                        scope.launch {
-                                            viewModel.getQuote()
-                                        }
-                                    }
-                            )
-                            bottomsheet(
-                                viewModel = viewModel,
-
-                                showBottomSheet,
-                                onDismiss = {
-                                    showBottomSheet = !showBottomSheet
-                                },
-                                changeQuoteColor = changeQuoteColor,
-                                copyQuoteToClipBoard = copyQuoteToClipBoard,
-                                setWallpaper = {
-                                    scope.launch(Dispatchers.IO) {
-                                        showContentForWallpapaer = true
-        //                        val bitmap = WallpaperRenderer(context).renderToBitmap(700,700,
-        //                            {
-        //                                ContentForWallpaper()
-        //                            }
-        //                        )
-                                        //Log.d("Tag","hello how are you $bitmap")
-                                        val wallpaperManager = WallpaperManager.getInstance(context)
-                                        // wallpaperManager.setBitmap(bitmap)
-                                        showContentForWallpapaer = false
-                                    }
-                                })
-                        }
-
                     }
                 }
             }
         }
+        // Bottom Buttons
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp).align(Alignment.BottomEnd).padding(bottom = 40.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
+
+        ) {
+
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
+                contentDescription = "Settings",
+                modifier = Modifier
+                    .background(
+                        color = Color.White,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(8.dp).clickable {
+                        showBottomSheet = !showBottomSheet
+                    }
+            )
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
+                contentDescription = "Fetch Images",
+                modifier = Modifier
+                    .background(
+                        color = Color.White,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(8.dp).clickable {
+                        scope.launch {
+                            viewModel.getQuote()
+                        }
+                    }
+            )
+            bottomsheet(
+                viewModel = viewModel,
+
+                showBottomSheet,
+                onDismiss = {
+                    showBottomSheet = !showBottomSheet
+                },
+                changeQuoteColor = changeQuoteColor,
+                copyQuoteToClipBoard = copyQuoteToClipBoard,
+                setWallpaper = {
+                    scope.launch(Dispatchers.IO) {
+                        showContentForWallpapaer = true
+                        //                        val bitmap = WallpaperRenderer(context).renderToBitmap(700,700,
+                        //                            {
+                        //                                ContentForWallpaper()
+                        //                            }
+                        //                        )
+                        //Log.d("Tag","hello how are you $bitmap")
+                        val wallpaperManager = WallpaperManager.getInstance(context)
+                        // wallpaperManager.setBitmap(bitmap)
+                        showContentForWallpapaer = false
+                    }
+                })
+        }
+
 
     }
 

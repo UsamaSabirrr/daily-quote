@@ -247,18 +247,18 @@ fun ContentForWallpaper(viewModel: QuoteViewModel, onValueChange:(graphicsLayer:
                         Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.width(screenWidthDp).height(screenHeightDp).background(color = Color.Cyan).padding(20.dp)) {
                             Text(
                                 text = buildAnnotatedString {
-                                   append(viewModel.state.value.quote?.quote)
+                                   append(viewModel.state.value.quoteList!![viewModel.state.value.quoteIndex].quote?:"")
                                 },
                                 textAlign = TextAlign.Center,
                                 color = Color(0xFFFFB4AB),
-                                fontSize = 28.sp,
-                                lineHeight = 40.sp,
+                                fontSize = 44.sp,
+                                lineHeight = 65.sp,
                                 letterSpacing = 0.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 )
                             Text(
                                 text = buildAnnotatedString {
-                                    append("- ${viewModel.state.value.quote?.author}")
+                                    append("- ${viewModel.state.value.quoteList?.get(viewModel.state.value.quoteIndex)?.author}")
                                 },
                                 textAlign = TextAlign.Center,
                                 fontSize = 20.sp,
