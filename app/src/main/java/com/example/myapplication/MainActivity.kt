@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.app.WallpaperManager
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -67,40 +68,45 @@ class MainActivity : ComponentActivity() {
 
             val context = LocalContext.current
 
+
+
+// Create an explicit intent for an Activity in your app.
+
+
             MyApplicationTheme {
                 MyApplicationTheme{
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
                         Column {
-//                            QuoteScreen(
-//                                viewModel = viewModel,
-//                                quoteColor = state.quoteColor, changeQuoteColor = { color ->
-//                                viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
-//                            }, copyQuoteToClipBoard = {
-//
-//                            viewModel.processIntent(
-//                                QuoteIntent.CopyQuoteToClipBoard(
-//                                    context = context,
-//                                )
-//                            )
-//                            },
-//
-//                            )
-                            Button(onClick = {
-                                val config = Configuration.Builder()
-                                    .setMinimumLoggingLevel(Log.DEBUG)
-                                    .setExecutor(SynchronousExecutor())
-                                    .build()
+                            QuoteScreen(
+                                viewModel = viewModel,
+                                quoteColor = state.quoteColor, changeQuoteColor = { color ->
+                                viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
+                            }, copyQuoteToClipBoard = {
 
-                                WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+                            viewModel.processIntent(
+                                QuoteIntent.CopyQuoteToClipBoard(
+                                    context = context,
+                                )
+                            )
+                            },
 
-                                val testWorker = PeriodicWorkRequestBuilder<QuoteWorker>(
-                                    1, TimeUnit.MINUTES  // Much shorter interval for testing
-                                ).build()
-                                workManager.enqueue(testWorker)
-                            }) {
-                                Text("Click me")
-                            }
+                            )
+//                            Button(onClick = {
+//                                val config = Configuration.Builder()
+//                                    .setMinimumLoggingLevel(Log.DEBUG)
+//                                    .setExecutor(SynchronousExecutor())
+//                                    .build()
+//
+//                                WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+//
+//                                val testWorker = PeriodicWorkRequestBuilder<QuoteWorker>(
+//                                    1, TimeUnit.MINUTES  // Much shorter interval for testing
+//                                ).build()
+//                                workManager.enqueue(testWorker)
+//                            }) {
+//                                Text("Click me")
+//                            }
                         }
                     }
                 }
