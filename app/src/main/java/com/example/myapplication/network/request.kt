@@ -75,6 +75,7 @@ class QuoteRepository(val database: AppDatabase){
 
     suspend fun saveQuotesLocally(quoteList:List<Quote>){
         val quoteLocalList = quoteList.map { it->QuoteLocal(id = it.id, quote = it.quote, author = it.author?:"") }
+        database.quoteDao().deleteQuotes()
         database.quoteDao().insertQuote(quoteLocalList)
     }
 

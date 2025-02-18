@@ -13,16 +13,15 @@ import com.example.myapplication.domain.Quote
 import com.example.myapplication.network.AppDatabase
 import com.example.myapplication.network.QuoteRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class QuoteViewModel(private val workManager: WorkManager,private val quoteRepository: QuoteRepository,private val db: AppDatabase) : ViewModel() {
+class QuoteViewModel(private val workManager: WorkManager,private val quoteRepository: QuoteRepository) : ViewModel() {
     private val _state = MutableStateFlow(QuoteState())
     val state: StateFlow<QuoteState> = _state.asStateFlow()
-    val quoteDao = db.quoteDao()
-
 
 
     init {
@@ -36,6 +35,12 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
 
 
     val myQuotes = listOf("Hy man","How are you","doing good")
+
+    suspend fun visible(){
+        _state.value = _state.value.copy(isVisible = true)
+        delay(500)
+        _state.value = _state.value.copy(isVisible = false)
+    }
 
      fun processIntent(intent: QuoteIntent){
         when(intent){
@@ -86,10 +91,10 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
             _state.value = _state.value.copy(isLoading = true)
            val result = quoteRepository.getUser()
             val users = result.getOrNull()
-
-            _state.value = _state.value.copy(quoteList = users, isLoading = false)
-            saveQuoteLocally()
-
+            if (users!=null){
+                _state.value = _state.value.copy(quoteList = users, isLoading = false)
+                saveQuoteLocally()
+            }
 
 //            if (users != null) {
 //                quoteDao.insertQuote(com.example.myapplication.network.QuoteLocal(uid = users.id, quote = users.title))

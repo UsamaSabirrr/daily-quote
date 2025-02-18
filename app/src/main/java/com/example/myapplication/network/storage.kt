@@ -24,6 +24,9 @@ interface QuoteDao {
     @Insert
     fun insertQuote( users: List<QuoteLocal>)
 
+    @Query("Delete from QuoteLocal")
+    fun deleteQuotes()
+
 }
 
 @Database(entities = [QuoteLocal::class], version = 1)

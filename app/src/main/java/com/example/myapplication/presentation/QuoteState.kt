@@ -120,5 +120,6 @@ data class QuoteState(
     val isDailyQuoteScheduled: Boolean = false,
     val quoteColor:Color = Color.Black,
     val quoteBackground:Color = Color.Black,
-    val quoteIndex:Int = -1
+    val quoteIndex:Int = -1,
+    val isVisible:Boolean = false
 )

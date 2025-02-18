@@ -1,85 +1,58 @@
 package com.example.myapplication
 
-import android.app.WallpaperManager
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
-import androidx.work.Configuration
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequest
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.impl.utils.SynchronousExecutor
-import androidx.work.testing.WorkManagerTestInitHelper
 import com.example.myapplication.network.AppDatabase
 import com.example.myapplication.network.QuoteRepository
 import com.example.myapplication.presentation.QuoteIntent
 import com.example.myapplication.presentation.QuoteViewModel
-import com.example.myapplication.presentation.QuoteWorker
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.view.QuoteScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
-import kotlin.time.Duration
 
 class MainActivity : ComponentActivity() {
     val workManager = WorkManager.getInstance()
 
+    private val USER_PREFERENCES_NAME = "user_preferences"
+     val dataStore by preferencesDataStore(
+        name = USER_PREFERENCES_NAME
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             val db = Room.databaseBuilder(
                 applicationContext,
                 AppDatabase::class.java, "quote-database"
             ).build()
             val quoteRepository = QuoteRepository(db)
-            val viewModel = QuoteViewModel(workManager,quoteRepository,db)
+            val viewModel = QuoteViewModel(workManager,quoteRepository)
 
             val state by viewModel.state.collectAsState()
             val scope = CoroutineScope(Dispatchers.Main)
-
             val context = LocalContext.current
 
 
-
-// Create an explicit intent for an Activity in your app.
-
-
-            MyApplicationTheme {
-                MyApplicationTheme{
+             MyApplicationTheme{
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
-                        Column {
                             QuoteScreen(
                                 viewModel = viewModel,
+                                dataStore,
                                 quoteColor = state.quoteColor, changeQuoteColor = { color ->
                                 viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
                             }, copyQuoteToClipBoard = {
@@ -90,7 +63,6 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                             },
-
                             )
 //                            Button(onClick = {
 //                                val config = Configuration.Builder()
@@ -107,10 +79,8 @@ class MainActivity : ComponentActivity() {
 //                            }) {
 //                                Text("Click me")
 //                            }
-                        }
                     }
                 }
-            }
         }
     }
 }

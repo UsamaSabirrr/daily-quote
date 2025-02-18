@@ -70,8 +70,6 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     runtimeOnly("androidx.compose.material:material-icons-extended:1.7.6")
     runtimeOnly("androidx.compose.ui:ui:1.7.7")
-
-
-
+    implementation("androidx.datastore:datastore-preferences:1.1.2")
 
 }

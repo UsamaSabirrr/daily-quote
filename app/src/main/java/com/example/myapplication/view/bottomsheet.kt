@@ -66,10 +66,9 @@ import java.io.OutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun bottomsheet(
+fun Bottomsheet(
     viewModel: QuoteViewModel,
-
-    showBottomSheet:Boolean,onDismiss:()->Unit,changeQuoteColor:(color:Color)->Unit,copyQuoteToClipBoard:()->Unit,setWallpaper:()->Unit){
+    showBottomSheet:Boolean,onDismiss:()->Unit,changeQuoteColor:(color:Color)->Unit){
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     val colors = listOf(Color(0xffe8daef),Color(0xffd2b4de),Color(0xffabebc6),Color(0xfff1c40f),Color(0xff8e44ad))
