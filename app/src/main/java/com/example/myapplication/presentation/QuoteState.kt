@@ -3,7 +3,6 @@ package com.example.myapplication.presentation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import com.example.myapplication.domain.Quote
-import com.example.myapplication.network.QuoteLocal
 
 val quotesList = listOf(
     Quote(
