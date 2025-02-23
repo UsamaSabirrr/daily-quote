@@ -14,8 +14,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import androidx.work.WorkManager
-import com.example.myapplication.network.AppDatabase
-import com.example.myapplication.network.QuoteRepository
+import com.example.myapplication.data.AppDatabase
+import com.example.myapplication.data.QuoteMapper
+import com.example.myapplication.data.QuoteRepositoryImpl
+import com.example.myapplication.domain.Quote
+import com.example.myapplication.domain.QuoteRepository
+import com.example.myapplication.network.RetrofitClient
 import com.example.myapplication.presentation.QuoteIntent
 import com.example.myapplication.presentation.QuoteViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -40,7 +44,9 @@ class MainActivity : ComponentActivity() {
                 applicationContext,
                 AppDatabase::class.java, "quote-database"
             ).build()
-            val quoteRepository = QuoteRepository(db)
+            val api = RetrofitClient.apiService
+            val quoteMapper = QuoteMapper()
+            val quoteRepository = QuoteRepositoryImpl(db,api,quoteMapper)
             val viewModel = QuoteViewModel(workManager,quoteRepository)
 
             val state by viewModel.state.collectAsState()

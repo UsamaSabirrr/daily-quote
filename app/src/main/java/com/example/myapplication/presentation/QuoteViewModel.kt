@@ -3,6 +3,7 @@ package com.example.myapplication.presentation
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
@@ -10,8 +11,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.myapplication.domain.Quote
-import com.example.myapplication.network.AppDatabase
-import com.example.myapplication.network.QuoteRepository
+import com.example.myapplication.domain.QuoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,15 +26,12 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-          val result = quoteRepository.getAllQuotes()
+          val result = quoteRepository.getAllQuotesLocally()
             if(result.isNotEmpty()){
                 _state.value = _state.value.copy(quoteList = result)
             }
         }
     }
-
-
-    val myQuotes = listOf("Hy man","How are you","doing good")
 
     suspend fun visible(){
         _state.value = _state.value.copy(isVisible = true)
@@ -51,7 +48,7 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
         }
     }
 
-    private fun updateQuoteColor(color: androidx.compose.ui.graphics.Color){
+    private fun updateQuoteColor(color: Color){
         _state.value = _state.value.copy(quoteColor = color)
     }
 
@@ -86,25 +83,27 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
         workManager.enqueue(quoteWorker.build())
     }
 
-    fun getQuote(){
-        viewModelScope.launch(Dispatchers.IO) {
-            _state.value = _state.value.copy(isLoading = true)
-           val result = quoteRepository.getUser()
-            val users = result.getOrNull()
-            if (users!=null){
-                _state.value = _state.value.copy(quoteList = users, isLoading = false)
-                saveQuoteLocally()
-            }
-
-//            if (users != null) {
-//                quoteDao.insertQuote(com.example.myapplication.network.QuoteLocal(uid = users.id, quote = users.title))
+//    fun getQuote(){
+//        viewModelScope.launch(Dispatchers.IO) {
+//            _state.value = _state.value.copy(isLoading = true)
+//           val result = quoteRepository.getAllQuotesOnline()
+//            val users = result.getOrNull()
+//            if (users!=null){
+//                _state.value = _state.value.copy(quoteList = users, isLoading = false)
+//                saveQuoteList()
 //            }
-        }
-    }
+//
+////            if (users != null) {
+////                quoteDao.insertQuote(com.example.myapplication.network.QuoteLocal(uid = users.id, quote = users.title))
+////            }
+//        }
+//    }
 
-    private fun saveQuoteLocally(){
+    private fun saveQuoteList(){
         viewModelScope.launch(Dispatchers.IO) {
-            _state.value.quoteList?.let { quoteRepository.saveQuotesLocally(quoteList = it) }
+            _state.value.quoteList?.let { quoteRepository.saveQuotesList(
+                quotes = it
+            ) }
         }
     }
 

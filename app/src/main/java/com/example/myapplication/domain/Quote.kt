@@ -9,7 +9,3 @@ data class Quote(
     val author:String? = null
 )
 
-data class QuoteOnline(
-    val q:String,
-    val a:String
-)

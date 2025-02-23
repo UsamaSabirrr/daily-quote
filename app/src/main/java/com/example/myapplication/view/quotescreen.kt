@@ -211,7 +211,7 @@ fun QuoteScreen(
                     )
                     .padding(8.dp).clickable {
                         scope.launch {
-                            viewModel.getQuote()
+                           // viewModel.getQuote()
                         }
                     }
             )

@@ -19,14 +19,13 @@ data class QuoteEntity(
 @Dao
 interface QuoteDao {
     @Query("SELECT * FROM QuoteEntity limit 20")
-    fun getAll(): List<QuoteEntity>
+    fun getAllQuotes(): List<QuoteEntity>
 
     @Insert
-    fun insertQuote( users: List<QuoteEntity>)
+    fun insertQuotesList(users: List<QuoteEntity>)
 
     @Query("Delete from QuoteEntity")
-    fun deleteQuotes()
-
+    fun deleteAllQuotes()
 }
 
 @Database(entities = [QuoteEntity::class], version = 1)
