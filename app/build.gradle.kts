@@ -44,6 +44,7 @@ android {
 dependencies {
     implementation(libs.androidx.work.testing)
     val roomVersion = "2.6.1"
+    val nav_version = "2.8.8"
 
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
@@ -71,5 +72,6 @@ dependencies {
     runtimeOnly("androidx.compose.material:material-icons-extended:1.7.6")
     runtimeOnly("androidx.compose.ui:ui:1.7.7")
     implementation("androidx.datastore:datastore-preferences:1.1.2")
-
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation("androidx.compose.ui:ui:1.0.0")
 }
