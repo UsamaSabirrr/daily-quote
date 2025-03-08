@@ -17,14 +17,17 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import androidx.work.WorkManager
@@ -35,9 +38,12 @@ import com.example.myapplication.network.RetrofitClient
 import com.example.myapplication.presentation.QuoteIntent
 import com.example.myapplication.presentation.QuoteViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.view.OnboardingScreent
+import com.example.myapplication.view.PreferencesKeys
 import com.example.myapplication.view.QuoteScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 data class BottomNavigationItem(
     val title: String,
@@ -47,6 +53,8 @@ data class BottomNavigationItem(
     val badgeCount: Int? = null
 )
 
+
+
 class MainActivity : ComponentActivity() {
     val workManager = WorkManager.getInstance()
 
@@ -54,6 +62,8 @@ class MainActivity : ComponentActivity() {
      val dataStore by preferencesDataStore(
         name = USER_PREFERENCES_NAME
     )
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,10 +107,33 @@ class MainActivity : ComponentActivity() {
             var selectedItemIndex by rememberSaveable {
                 mutableStateOf(0)
             }
+            var onboardingDone by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                dataStore.data.collect{it->
+                  onboardingDone =  it[PreferencesKeys.ONBOARDING]?:false
+                }
+
+            }
 
 
-             MyApplicationTheme{
-                    Scaffold(modifier = Modifier.fillMaxSize(),
+
+
+//             MyApplicationTheme{
+            when(onboardingDone){
+           false-> Scaffold {
+
+                OnboardingScreent(onBoardingDone = {
+                    onboardingDone = true
+                    scope.launch(Dispatchers.IO) {
+                        dataStore.edit {
+                                it->
+                            it[PreferencesKeys.ONBOARDING] = true
+                        }
+                    }
+                })
+            }
+             true->       Scaffold(modifier = Modifier.fillMaxSize(),
                         bottomBar = {
                             NavigationBar {
                                 items.forEachIndexed { index, item ->
@@ -161,7 +194,9 @@ class MainActivity : ComponentActivity() {
 //                                Text("Click me")
 //                            }
                     }
-                }
+
+
+            }
         }
     }
 }

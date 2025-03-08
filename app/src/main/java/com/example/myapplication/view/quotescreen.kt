@@ -2,6 +2,8 @@ package com.example.myapplication.view
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -14,13 +16,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults.windowInsets
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,8 +52,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowInsetsCompat
 import com.example.myapplication.R
 import com.example.myapplication.presentation.QuoteIntent
 import com.example.myapplication.presentation.QuoteViewModel
@@ -55,12 +65,15 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.flow.first
 
 object PreferencesKeys {
     val SCROLL_INDEX = intPreferencesKey("scroll_index")
+    val ONBOARDING = booleanPreferencesKey("onboarding")
+    val QUOTES_COUNT = intPreferencesKey("quotes_count")
 }
 
 @Composable
@@ -87,6 +100,15 @@ fun QuoteScreen(
     }
     val context = LocalContext.current
 
+    val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    var enabled by remember { mutableStateOf(true) }
+
+    val width = LocalConfiguration.current.screenWidthDp.dp
+
+    val alpha: Dp by animateDpAsState(if (enabled) width-100.dp else 100.dp, label = "alpha")
+
+
 
     LaunchedEffect(scrollState) {
         snapshotFlow { scrollState.firstVisibleItemIndex }
@@ -96,6 +118,12 @@ fun QuoteScreen(
                 dataStore.edit(transform = {it->
                     it[PreferencesKeys.SCROLL_INDEX] = index
                 })
+               if(index==4){
+                   enabled = true
+               }else{
+                   enabled = false
+               }
+
             }
     }
 
@@ -105,6 +133,7 @@ fun QuoteScreen(
             val savedIndex = preferences[PreferencesKeys.SCROLL_INDEX] ?: 0
             scrollState.animateScrollToItem(savedIndex)
         }
+        Log.d("hel","this is hello")
     }
 
 
@@ -183,38 +212,37 @@ fun QuoteScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp).align(Alignment.BottomEnd).padding(bottom = 40.dp),
+                .padding(bottom = bottomPadding+80.dp).align(Alignment.BottomEnd).padding(bottom = 40.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
 
         ) {
+            Button(modifier = Modifier.width(alpha), onClick = {}) {
+                if(alpha!=width-100.dp) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
+                        contentDescription = "Settings",
 
-            Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
-                contentDescription = "Settings",
-                modifier = Modifier
-                    .background(
-                        color = Color.White,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .padding(8.dp).clickable {
-                        showBottomSheet = !showBottomSheet
-                    }
-            )
-            Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
-                contentDescription = "Fetch Images",
-                modifier = Modifier
-                    .background(
-                        color = Color.White,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .padding(8.dp).clickable {
-                        scope.launch {
-                           // viewModel.getQuote()
-                        }
-                    }
-            )
+                        )
+                }else{
+                    Text("Let the Quotes Flow")
+                }
+            }
+
+//            Icon(
+//                imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
+//                contentDescription = "Fetch Images",
+//                modifier = Modifier
+//                    .background(
+//                        color = Color.White,
+//                        shape = RoundedCornerShape(12.dp)
+//                    )
+//                    .padding(8.dp).clickable {
+//                        scope.launch {
+//                           // viewModel.getQuote()
+//                        }
+//                    }
+//            )
             Bottomsheet(
                 viewModel = viewModel,
                 showBottomSheet,
