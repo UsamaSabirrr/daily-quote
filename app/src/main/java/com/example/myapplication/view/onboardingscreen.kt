@@ -17,6 +17,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,9 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.myapplication.presentation.QuoteViewModel
 
 @Composable
-fun OnboardingScreent(onBoardingDone:()->Unit){
+fun OnboardingScreent(onBoardingDone:()->Unit,viewModel: QuoteViewModel){
+    val state by viewModel.state.collectAsState()
     var sliderPosition by remember { mutableStateOf(3f) }
     var openAlertDialog by remember { mutableStateOf(true) }
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize().padding(20.dp)) {
@@ -46,7 +49,8 @@ fun OnboardingScreent(onBoardingDone:()->Unit){
 
         Slider(
             value = sliderPosition,
-            onValueChange = { sliderPosition = it },
+            onValueChange = { sliderPosition = it
+                            viewModel.quotesCount = it.toInt()},
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.secondary,
                 activeTrackColor = MaterialTheme.colorScheme.secondary,

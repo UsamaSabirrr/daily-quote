@@ -113,7 +113,7 @@ data class QuoteState(
         quote = "The only way to do great work is to love what you do.",
         author = "Steve Jobs"
     ),
-    val quoteList:List<Quote>? = quotesList,
+    val quoteList:List<Quote> = quotesList,
     val isLoading: Boolean = false,
     val error: String? = null,
     val isDailyQuoteScheduled: Boolean = false,

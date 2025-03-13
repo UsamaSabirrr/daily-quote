@@ -1,9 +1,12 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -27,8 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import androidx.work.WorkManager
 import com.example.myapplication.data.AppDatabase
@@ -43,6 +50,7 @@ import com.example.myapplication.view.PreferencesKeys
 import com.example.myapplication.view.QuoteScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class BottomNavigationItem(
@@ -59,9 +67,9 @@ class MainActivity : ComponentActivity() {
     val workManager = WorkManager.getInstance()
 
     private val USER_PREFERENCES_NAME = "user_preferences"
-     val dataStore by preferencesDataStore(
-        name = USER_PREFERENCES_NAME
-    )
+
+
+    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = USER_PREFERENCES_NAME)
 
 
 
@@ -76,8 +84,11 @@ class MainActivity : ComponentActivity() {
             ).build()
             val api = RetrofitClient.apiService
             val quoteMapper = QuoteMapper()
-            val quoteRepository = QuoteRepositoryImpl(db,api,quoteMapper)
-            val viewModel = QuoteViewModel(workManager,quoteRepository)
+            val quoteRepository = QuoteRepositoryImpl(db, api, quoteMapper)
+            // In MainActivity
+            val viewModel: QuoteViewModel by viewModels {
+                QuoteViewModelFactory(workManager, quoteRepository, dataStore)
+            }
 
             val state by viewModel.state.collectAsState()
             val scope = CoroutineScope(Dispatchers.Main)
@@ -116,24 +127,37 @@ class MainActivity : ComponentActivity() {
 
             }
 
+            LaunchedEffect(Unit) {
+                Log.d("MainActivity","in it launch effect")
+                dataStore.data.first().let { it ->
+                    onboardingDone = it[PreferencesKeys.ONBOARDING] ?: false
 
+                }
 
-
-//             MyApplicationTheme{
-            when(onboardingDone){
-           false-> Scaffold {
-
-                OnboardingScreent(onBoardingDone = {
-                    onboardingDone = true
-                    scope.launch(Dispatchers.IO) {
-                        dataStore.edit {
-                                it->
-                            it[PreferencesKeys.ONBOARDING] = true
-                        }
-                    }
-                })
             }
-             true->       Scaffold(modifier = Modifier.fillMaxSize(),
+
+            Log.d("MainActivity","in it ${onboardingDone}")
+            Log.d("MainActivity","quotes list ${state.quoteList.size}")
+            MyApplicationTheme {
+                when (onboardingDone) {
+                    false -> Scaffold {it->
+
+                        OnboardingScreent(onBoardingDone = {
+
+                            scope.launch(Dispatchers.IO) {
+                                context.dataStore.edit { it ->
+                                    it[PreferencesKeys.ONBOARDING] = true
+                                    it[PreferencesKeys.QUOTES_COUNT] = viewModel.quotesCount
+                                }
+                                onboardingDone = true
+                                viewModel.processIntent(QuoteIntent.CompleteOnboarding)
+
+                            }
+
+                        }, viewModel = viewModel)
+                    }
+
+                    true -> Scaffold(modifier = Modifier.fillMaxSize(),
                         bottomBar = {
                             NavigationBar {
                                 items.forEachIndexed { index, item ->
@@ -149,12 +173,12 @@ class MainActivity : ComponentActivity() {
                                         alwaysShowLabel = false,
                                         icon = {
 
-                                                Icon(
-                                                    imageVector = if (index == selectedItemIndex) {
-                                                        item.selectedIcon
-                                                    } else item.unselectedIcon,
-                                                    contentDescription = item.title
-                                                )
+                                            Icon(
+                                                imageVector = if (index == selectedItemIndex) {
+                                                    item.selectedIcon
+                                                } else item.unselectedIcon,
+                                                contentDescription = item.title
+                                            )
 
                                         }
                                     )
@@ -162,21 +186,28 @@ class MainActivity : ComponentActivity() {
 
 
                             }
-                        }) { innerPadding ->
-                            QuoteScreen(
-                                viewModel = viewModel,
-                                dataStore,
-                                quoteColor = state.quoteColor, changeQuoteColor = { color ->
-                                viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
-                            }, copyQuoteToClipBoard = {
+                        }) { it ->
+                        QuoteScreen(
+                            viewModel = viewModel,
+                            dataStore,
+                            quoteColor = state.quoteColor,
+                            changeQuoteColor = { color ->
+                                scope.launch {
+                                    viewModel.processIntent(QuoteIntent.ChangeQuoteColor(color))
+                                }
 
-                            viewModel.processIntent(
-                                QuoteIntent.CopyQuoteToClipBoard(
-                                    context = context,
-                                )
-                            )
                             },
-                            )
+                            copyQuoteToClipBoard = {
+                                scope.launch {
+                                    viewModel.processIntent(
+                                        QuoteIntent.CopyQuoteToClipBoard(
+                                            context = context,
+                                        )
+                                    )
+                                }
+
+                            },
+                        )
 
 //                            Button(onClick = {
 //                                val config = Configuration.Builder()
@@ -196,6 +227,7 @@ class MainActivity : ComponentActivity() {
                     }
 
 
+                }
             }
         }
     }
@@ -250,3 +282,17 @@ class MainActivity : ComponentActivity() {
 //    }
 //}
 
+
+class QuoteViewModelFactory(
+    private val workManager: WorkManager,
+    private val repository: QuoteRepositoryImpl,
+    private val dataStore: DataStore<Preferences>
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(QuoteViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return QuoteViewModel(workManager, repository, dataStore) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}

@@ -90,11 +90,14 @@ fun Bottomsheet(
                 .padding(horizontal = 10.dp)) {
                 Row(horizontalArrangement = Arrangement.Absolute.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                    BottomSheetActions(drawable = R.drawable.baseline_content_copy_24,"Copy Quote", onClick = {
-                       viewModel.processIntent(
-                           QuoteIntent.CopyQuoteToClipBoard(
-                               context = context,
-                           )
-                       )
+                      scope.launch {
+                          viewModel.processIntent(
+                              QuoteIntent.CopyQuoteToClipBoard(
+                                  context = context,
+                              )
+                          )
+                      }
+
                    })
                     BottomSheetActions(drawable = R.drawable.baseline_wallpaper_24,"Set Wallpaper", onClick = {
                         scope.launch(Dispatchers.IO) {

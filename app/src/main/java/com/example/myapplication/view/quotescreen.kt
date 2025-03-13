@@ -68,6 +68,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 
 object PreferencesKeys {
@@ -112,13 +113,14 @@ fun QuoteScreen(
 
     LaunchedEffect(scrollState) {
         snapshotFlow { scrollState.firstVisibleItemIndex }
-            .distinctUntilChanged()  // Only emit when value actually changes
-            .collect { index ->
+            // Only emit when value actually changes
+            .collectLatest { index ->
+                Log.d("QuoteScreen","scroll index is ${index}")
                 viewModel.processIntent(QuoteIntent.SetCurrentQuoteIndex(index))
                 dataStore.edit(transform = {it->
                     it[PreferencesKeys.SCROLL_INDEX] = index
                 })
-               if(index==4){
+               if(index == ((state.quoteList?.size)?.minus(2) ?: 0)){
                    enabled = true
                }else{
                    enabled = false
@@ -217,7 +219,20 @@ fun QuoteScreen(
             verticalAlignment = Alignment.CenterVertically,
 
         ) {
-            Button(modifier = Modifier.width(alpha), onClick = {}) {
+            Button(modifier = Modifier.width(alpha), onClick = {
+                if(alpha!=width-100.dp){
+                    showBottomSheet = !showBottomSheet
+                }else{
+//                    scope.launch(Dispatchers.IO) {
+//                        viewModel.getNewQuotes(dataStore)
+//                    }
+                    scope.launch {
+                        viewModel.completeOnboarding()
+                    }
+
+                }
+
+            }) {
                 if(alpha!=width-100.dp) {
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.outline_settings_24),  // Replace with your custom profile icon
