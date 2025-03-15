@@ -133,6 +133,7 @@ fun QuoteScreen(
         Log.d("Tag","only once")
         dataStore.data.first().let { preferences ->  // Using .first() to get only initial value
             val savedIndex = preferences[PreferencesKeys.SCROLL_INDEX] ?: 0
+
             scrollState.animateScrollToItem(savedIndex)
         }
         Log.d("hel","this is hello")
@@ -223,13 +224,9 @@ fun QuoteScreen(
                 if(alpha!=width-100.dp){
                     showBottomSheet = !showBottomSheet
                 }else{
-//                    scope.launch(Dispatchers.IO) {
-//                        viewModel.getNewQuotes(dataStore)
-//                    }
-                    scope.launch {
-                        viewModel.completeOnboarding()
+                    scope.launch(Dispatchers.IO) {
+                        viewModel.getNewQuotes(dataStore)
                     }
-
                 }
 
             }) {

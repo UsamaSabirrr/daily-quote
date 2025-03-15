@@ -103,7 +103,7 @@ class QuoteViewModel(private val workManager: WorkManager,private val quoteRepos
                 val trimmedList = quotesList.subList(0,quotesCount)
                 quoteRepository.deleteQuotes()
                 quoteRepository.saveQuotesList(trimmedList)
-                _state.value = _state.value.copy(quoteList = quotesList)
+                _state.value = _state.value.copy(quoteList = trimmedList)
             }
         }catch (e:Exception){
 
